@@ -22,6 +22,22 @@ class ViewController: UIViewController, MKMapViewDelegate {
         let washington = Capital(title: "Washington", info: "Named after George himself.", coordinate: CLLocationCoordinate2D(latitude: 38.895111, longitude: -77.036667))
         
         mapView.addAnnotations([london, oslo, paris, rome, washington])
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .bookmarks, target: self, action: #selector(changeMapType))
+    }
+    
+    @objc func changeMapType() {
+        let ac = UIAlertController(title: "Map Type", message: nil, preferredStyle: .actionSheet)
+        ac.addAction(UIAlertAction(title: "Standard", style: .default, handler: { (_) in
+            self.mapView.mapType = .standard
+        }))
+        ac.addAction(UIAlertAction(title: "Satellite", style: .default, handler: { (_) in
+            self.mapView.mapType = .satellite
+        }))
+        ac.addAction(UIAlertAction(title: "Hybrid", style: .default, handler: { (_) in
+            self.mapView.mapType = .hybrid
+        }))
+        ac.addAction(UIAlertAction(title: "Canel", style: .cancel))
+        present(ac, animated: true)
     }
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -29,11 +45,12 @@ class ViewController: UIViewController, MKMapViewDelegate {
         
         let identifier = "Capital"
         
-        var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
+        var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKPinAnnotationView
         
         if annotationView == nil {
             annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: identifier)
             annotationView?.canShowCallout = true
+            annotationView?.pinTintColor = UIColor.systemYellow
             
             let button = UIButton(type: .detailDisclosure)
             annotationView?.rightCalloutAccessoryView = button
@@ -47,12 +64,17 @@ class ViewController: UIViewController, MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         guard let capital = view.annotation as? Capital else { return }
         
-        let placeName = capital.title
-        let placeInfo = capital.info
+//        let placeName = capital.title
+//        let placeInfo = capital.info
         
-        let ac = UIAlertController(title: placeName, message: placeInfo, preferredStyle: .alert)
-        ac.addAction(UIAlertAction(title: "OK", style: .default))
-        present(ac, animated: true)
+        if let vc = storyboard?.instantiateViewController(identifier: "WebView") as? WebViewController {
+            vc.selectedWebsite = capital.title!
+            navigationController?.pushViewController(vc, animated: true)
+        }
+        
+//        let ac = UIAlertController(title: placeName, message: placeInfo, preferredStyle: .alert)
+//        ac.addAction(UIAlertAction(title: "OK", style: .default))
+//        present(ac, animated: true)
     }
 
 
